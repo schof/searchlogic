@@ -53,7 +53,7 @@ module Searchlogic
         
         def create_association_condition(association, condition_name, args, poly_class = nil)
           name = [association.name, poly_class && "#{poly_class.name.underscore}_type", condition_name].compact.join("_")
-          named_scope(name, association_condition_options(association, condition_name, args, poly_class))
+          scope(name, association_condition_options(association, condition_name, args, poly_class))
         end
         
         def association_condition_options(association, association_condition, args, poly_class = nil)

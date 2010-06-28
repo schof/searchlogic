@@ -22,7 +22,7 @@ module Searchlogic
       # as well, so if you have a conflict like this, you can use
       # this method directly.
       def searchlogic(conditions = {})
-        Search.new(self, scope(:find), conditions)
+        Search.new(self, {}, conditions) #scope(:find), conditions)
       end
     end
     
@@ -106,6 +106,7 @@ module Searchlogic
       def method_missing(name, *args, &block)
         condition_name = condition_name(name)
         scope_name = scope_name(condition_name)
+
         
         if setter?(name)
           if scope?(scope_name)

@@ -37,7 +37,7 @@ module Searchlogic
         end
         
         def create_association_ordering_condition(association, order_as, condition, args)
-          named_scope("#{order_as}_by_#{association.name}_#{condition}", association_condition_options(association, "#{order_as}_by_#{condition}", args))
+          scope("#{order_as}_by_#{association.name}_#{condition}", association_condition_options(association, "#{order_as}_by_#{condition}", args))
         end
     end
   end

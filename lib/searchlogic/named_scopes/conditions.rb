@@ -75,7 +75,7 @@ module Searchlogic
             send(name, *args)
           elsif boolean_condition?(name)
             column = name.to_s.gsub(/^not_/, "")
-            named_scope name, :conditions => {column => (name.to_s =~ /^not_/).nil?}
+            scope name, where(column.to_sym => (name.to_s =~ /^not_/).nil?)  #:conditions => {column => (name.to_s =~ /^not_/).nil?}
             send(name)
           else
             super
@@ -108,6 +108,7 @@ module Searchlogic
           scope_options = case condition.to_s
           when /^equals/
             scope_options(condition, column_type, lambda { |a| attribute_condition("#{table_name}.#{column}", a) }, :skip_conversion => skip_conversion)
+            #scope_options(condition, column_type, "#{table_name}.#{column} == ?", :skip_conversion => skip_conversion)
           when /^does_not_equal/
             scope_options(condition, column_type, "#{table_name}.#{column} != ?", :skip_conversion => skip_conversion)
           when /^less_than_or_equal_to/
@@ -142,7 +143,7 @@ module Searchlogic
             {:conditions => "#{table_name}.#{column} != '' AND #{table_name}.#{column} IS NOT NULL"}
           end
 
-          named_scope("#{column}_#{condition}".to_sym, scope_options)
+          scope("#{column}_#{condition}".to_sym, scope_options)
         end
 
         # This method helps cut down on defining scope options for conditions that allow *_any or *_all conditions.
