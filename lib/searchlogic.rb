@@ -11,6 +11,7 @@ require "searchlogic/named_scopes/alias_scope"
 require "searchlogic/named_scopes/or_conditions"
 require "searchlogic/search"
 
+ActiveRecord::Relation.send(:include, Searchlogic::CoreExt::Proc)
 Proc.send(:include, Searchlogic::CoreExt::Proc)
 Object.send(:include, Searchlogic::CoreExt::Object)
 
@@ -28,9 +29,10 @@ module ActiveRecord # :nodoc: all
 end
 
 m = Searchlogic::NamedScopes
-[Searchlogic::ActiveRecord::NamedScopeTools, 
+[
+  Searchlogic::ActiveRecord::NamedScopeTools,
   m::Conditions,
-#  m::AssociationConditions,
+  m::AssociationConditions,
 #  m::AssociationOrdering,
   m::Ordering,
 #  m::AliasScope

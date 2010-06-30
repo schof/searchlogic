@@ -16,6 +16,7 @@ module Searchlogic
         key = scopes.key?(name.to_sym) ? name.to_sym : condition_scope_name(name)
         
         if key
+          #TODO: recover the find options from relation
           eval("options", scopes[key].binding)
         else
           nil

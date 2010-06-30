@@ -71,7 +71,7 @@ module Searchlogic
 
         def method_missing(name, *args, &block)
           if details = condition_details(name)
-            create_condition(details[:column], details[:condition], args)
+            create_scope(details[:column], details[:condition], args)
             send(name, *args)
           elsif boolean_condition?(name)
             column = name.to_s.gsub(/^not_/, "")
@@ -84,6 +84,7 @@ module Searchlogic
 
 
         def condition_details(method_name)
+          #TODO: cache these
           column_name_matcher = column_names.join("|")
           conditions_matcher = (PRIMARY_CONDITIONS + ALIAS_CONDITIONS).join("|")
 
@@ -92,15 +93,15 @@ module Searchlogic
           end
         end
 
-        def create_condition(column, condition, args)
+        def create_scope(column, condition, args)
           if PRIMARY_CONDITIONS.include?(condition.to_sym)
-            create_primary_condition(column, condition)
+            create_primary_scope(column, condition)
           elsif ALIAS_CONDITIONS.include?(condition.to_sym)
-            create_alias_condition(column, condition, args)
+            create_aliased_scope(column, condition, args)
           end
         end
 
-        def create_primary_condition(column, condition)
+        def create_primary_scope(column, condition)
           column_type = columns_hash[column.to_s].type
           skip_conversion = skip_time_zone_conversion_for_attributes.include?(columns_hash[column.to_s].name.to_sym)
           match_keyword = ::ActiveRecord::Base.connection.adapter_name == "PostgreSQL" ? "ILIKE" : "LIKE"
@@ -190,7 +191,7 @@ module Searchlogic
           end
         end
 
-        def create_alias_condition(column, condition, args)
+        def create_aliased_scope(column, condition, args)
           primary_condition = primary_condition(condition)
           alias_name = "#{column}_#{condition}"
           primary_name = "#{column}_#{primary_condition}"

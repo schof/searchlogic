@@ -21,7 +21,12 @@ end
 require 'spec/rake/spectask'
 Spec::Rake::SpecTask.new(:spec) do |spec|
   spec.libs << 'lib' << 'spec'
-  spec.spec_files = FileList['spec/**/*_spec.rb']
+  spec.spec_files = FileList[
+    #'spec/**/conditions_spec.rb',
+    #'spec/**/ordering_conditions_spec.rb',
+    'spec/**/association_conditions_spec.rb'
+    #'spec/**/*_spec.rb'
+    ]
 end
 
 Spec::Rake::SpecTask.new(:rcov) do |spec|
