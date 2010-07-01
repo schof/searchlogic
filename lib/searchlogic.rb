@@ -33,7 +33,7 @@ m = Searchlogic::NamedScopes
   Searchlogic::ActiveRecord::NamedScopeTools,
   m::Conditions,
   m::AssociationConditions,
-#  m::AssociationOrdering,
+  m::AssociationOrdering,
   m::Ordering,
 #  m::AliasScope
 #  m::OrConditions

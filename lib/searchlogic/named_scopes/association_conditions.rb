@@ -8,14 +8,14 @@ module Searchlogic
 
       def _resolve_deep_association_conditions(condition_name, args)
         if local_condition?(condition_name)
-          [self.table_name.to_sym, self.send(condition_name, *args)]
+          {:joins=>nil, :klass=>self, :condition=>condition_name}
         elsif details = association_condition_details(condition_name)
-          resolution = details[:association].klass._resolve_deep_association_conditions(details[:condition], args)
-          return nil unless resolution #method did not resolve
-          this_table = self.table_name.to_sym
-          join_list = resolution.first.nil? ? this_table : {this_table=>resolution.first}
-          [join_list, resolution.last]
-        else #this method did not resolve
+          result = details[:association].klass._resolve_deep_association_conditions(details[:condition], args)
+          return nil unless result #condition method did not resolve
+          this_association = details[:association].name
+          join_condition = result[:joins].nil? ? this_association : {this_association=>result[:joins]}
+          result.merge(:joins=>join_condition)
+        else #this condition method did not resolve
           nil
         end
       end
@@ -37,15 +37,19 @@ module Searchlogic
         end
 
         def create_scope_for_association(association, condition_name, args, poly_class = nil)
-          resolution = association.klass._resolve_deep_association_conditions(condition_name, args)
-          return unless resolution
+          result = (poly_class || association.klass)._resolve_deep_association_conditions(condition_name, args)
+          return unless result
 
-          final_condition = resolution.last
-          join_hierarchy = resolution.first
-          algebra = final_condition.joins(join_hierarchy)
+          joins_result = result[:joins].nil? ? association.name : {association.name => result[:joins]}
+
+          lambda_containing_relational_algebra = eval <<-"end_eval"
+            lambda { |*args|
+              #{result[:klass].name}.#{result[:condition]}(*args).joins(#{joins_result.inspect})
+            }
+          end_eval
 
           name = [association.name, poly_class && "#{poly_class.name.underscore}_type", condition_name].compact.join("_")
-          scope(name, algebra)
+          scope(name, lambda_containing_relational_algebra)
         end
 
         def association_condition_details(name, last_condition = nil)

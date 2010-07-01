@@ -25,6 +25,8 @@ Spec::Rake::SpecTask.new(:spec) do |spec|
     #'spec/**/conditions_spec.rb',
     #'spec/**/ordering_conditions_spec.rb',
     'spec/**/association_conditions_spec.rb'
+    #'spec/**/association_ordering_spec.rb'
+    #'spec/**/search_spec.rb'
     #'spec/**/*_spec.rb'
     ]
 end
