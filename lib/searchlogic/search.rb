@@ -22,7 +22,7 @@ module Searchlogic
       # as well, so if you have a conflict like this, you can use
       # this method directly.
       def searchlogic(conditions = {})
-        Search.new(self, {}, conditions) #scope(:find), conditions)
+        Search.new(self, self, conditions) #scope(:find), conditions)
       end
     end
     
@@ -38,6 +38,10 @@ module Searchlogic
       end
     end
     
+    def do_search
+      @current_scope
+    end
+          
     attr_accessor :klass, :current_scope, :conditions
     undef :id if respond_to?(:id)
     
@@ -81,7 +85,10 @@ module Searchlogic
         mass_conditions[condition.to_sym] = value
         value.delete_if { |v| ignore_value?(v) } if value.is_a?(Array)
         next if ignore_value?(value)
+        # value = Time.zone.parse(value) if value =~ /[\d\/.-]{10}/
+        @current_scope = @current_scope.send(condition, value)
         send("#{condition}=", value)
+        @conditions[condition.to_sym] = value
       end
     end
     

@@ -52,6 +52,10 @@ module Searchlogic
       PRIMARY_CONDITIONS = CONDITIONS.keys
       ALIAS_CONDITIONS = CONDITIONS.values.flatten
 
+      def options
+        @options
+      end
+
       # Is the name of the method a valid condition that can be dynamically created?
       def condition?(name)
         local_condition?(name)
@@ -108,8 +112,8 @@ module Searchlogic
 
           scope_options = case condition.to_s
           when /^equals/
-            scope_options(condition, column_type, lambda { |a| attribute_condition("#{table_name}.#{column}", a) }, :skip_conversion => skip_conversion)
-            #scope_options(condition, column_type, "#{table_name}.#{column} == ?", :skip_conversion => skip_conversion)
+            #scope_options(condition, column_type, lambda { |a| attribute_condition("#{table_name}.#{column}", a) }, :skip_conversion => skip_conversion)
+            scope_options(condition, column_type, "#{table_name}.#{column} = ?", :skip_conversion => skip_conversion)
           when /^does_not_equal/
             scope_options(condition, column_type, "#{table_name}.#{column} != ?", :skip_conversion => skip_conversion)
           when /^less_than_or_equal_to/
@@ -133,15 +137,15 @@ module Searchlogic
           when /^not_end_with/
             scope_options(condition, column_type, "#{table_name}.#{column} NOT #{match_keyword} ?", :skip_conversion => skip_conversion, :value_modifier => :ends_with)
           when "null"
-            {:conditions => "#{table_name}.#{column} IS NULL"}
+            lambda { where("#{table_name}.#{column} IS NULL")}
           when "not_null"
-            {:conditions => "#{table_name}.#{column} IS NOT NULL"}
+            lambda { where("#{table_name}.#{column} IS NOT NULL")}
           when "empty"
-            {:conditions => "#{table_name}.#{column} = ''"}
+            lambda { where("#{table_name}.#{column} = ''")}
           when "blank"
-            {:conditions => "#{table_name}.#{column} = '' OR #{table_name}.#{column} IS NULL"}
+            lambda { where("#{table_name}.#{column} = '' OR #{table_name}.#{column} IS NULL")}
           when "not_blank"
-            {:conditions => "#{table_name}.#{column} != '' AND #{table_name}.#{column} IS NOT NULL"}
+            lambda { where("#{table_name}.#{column} != '' AND #{table_name}.#{column} IS NOT NULL")}
           end
 
           scope("#{column}_#{condition}".to_sym, scope_options)
@@ -162,7 +166,7 @@ module Searchlogic
 
                 scope_sql = values.collect { |value| sql.is_a?(Proc) ? sql.call(value) : sql }.join(join)
 
-                {:conditions => [scope_sql, *expand_range_bind_variables(values)]}
+                lambda { where [scope_sql, *expand_range_bind_variables(values)]}
               else
                 {}
               end
