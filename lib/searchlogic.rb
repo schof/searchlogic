@@ -48,7 +48,7 @@ end
 #ActiveRecord::Base.extend(Searchlogic::NamedScopes::AssociationOrdering)
 #ActiveRecord::Base.extend(Searchlogic::NamedScopes::Ordering)
 #ActiveRecord::Base.extend(Searchlogic::NamedScopes::AliasScope)
-#ActiveRecord::Base.extend(Searchlogic::NamedScopes::OrConditions)
+ActiveRecord::Base.extend(Searchlogic::NamedScopes::OrConditions)
 ActiveRecord::Base.extend(Searchlogic::Search::Implementation)
 
 

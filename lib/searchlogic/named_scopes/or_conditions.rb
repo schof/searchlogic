@@ -117,17 +117,15 @@ module Searchlogic
             { :path => path, :column => part, :condition => last_condition }
         end
         
-        def create_or_condition(scopes, args)
-          scopes_options = scopes.collect { |scope, *args| send(scope, *args).proxy_options }
-          # We're using first scope to determine column's type
-          scope = named_scope_options(scopes.first)
-          column_type = scope.respond_to?(:searchlogic_options) ? scope.searchlogic_options[:type] : :string
-          scope scopes.join("_or_"), searchlogic_lambda(column_type) { |*args|
-            merge_scopes_with_or(scopes.collect { |scope| clone.send(scope, *args) })
-          }
+        def create_or_condition(scopes, scope_args)
+					column_type = :string
+          scope scopes.join("_or_"), create_scoped_or(scopes, scope_args)
         end
         
-        def merge_scopes_with_or(scopes)
+				def create_scoped_or(scopes, args)
+					lambda { |arg| where(scopes.map { |scope_item| scope_item.gsub(/_/, ' ') + ' ?'}.join(' OR '), args.first, args.first) }
+				end
+				def merge_scopes_with_or(scopes)
           scopes_options = scopes.collect { |scope| scope.scope(:find) }
           conditions = scopes_options.reject { |o| o[:conditions].nil? }.collect { |o| sanitize_sql(o[:conditions]) }
           scope = scopes_options.inject(scoped({})) { |current_scope, options| current_scope.scoped(options) }
