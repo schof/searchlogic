@@ -42,12 +42,13 @@ module Searchlogic
         end
         
         def method_missing(name, *args, &block)
-#          if name == :order
-#            scope name, lambda { |scope_name|
-#              return {} if !condition?(scope_name)
-#              send(scope_name).proxy_options
-#            }
-#            send(name, *args)
+          if name == :order
+            scope name, lambda { |scope_name|
+              return {} if !condition?(scope_name)
+              send(scope_name).proxy_options
+            }
+            send(name, *args)
+          end
           if details = ordering_condition_details(name)
             create_ordering_conditions(details[:column])
             send(name, *args)
