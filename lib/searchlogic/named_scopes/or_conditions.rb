@@ -116,15 +116,25 @@ module Searchlogic
             end
             { :path => path, :column => part, :condition => last_condition }
         end
-        
+
         def create_or_condition(scopes, scope_args)
-					column_type = :string
-          scope scopes.join("_or_"), create_scoped_or(scopes, scope_args)
+          scope name_the_scope(scopes), create_scoped_or(scopes, scope_args)
         end
-        
-				def create_scoped_or(scopes, args)
-					lambda { |arg| where(scopes.map { |scope_item| scope_item.gsub(/_/, ' ') + ' ?'}.join(' OR '), args.first, args.first) }
-				end
+
+        def name_the_scope(scopes)
+          for id in 0..(scopes.length-1)
+            if scopes[id].split('_')[1] == scopes[id+1].split('_')[1]
+              return scopes[id].split('_')[0] + '_or_' + scopes[id+1]
+            else
+              return scopes.join('_or_')
+            end
+          end
+        end
+
+        def create_scoped_or(scopes, args)
+          lambda { |arg| where(scopes.map { |scope_item| scope_item.gsub(/_/, ' ') + ' ?'}.join(' OR '), args.first, args.first) }
+        end
+
 				def merge_scopes_with_or(scopes)
           scopes_options = scopes.collect { |scope| scope.scope(:find) }
           conditions = scopes_options.reject { |o| o[:conditions].nil? }.collect { |o| sanitize_sql(o[:conditions]) }
